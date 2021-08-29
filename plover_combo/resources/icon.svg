@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <title>all</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:title>all</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill="#7fff2a" aria-label="C">
+  <path d="m10.833 27.5h8.3333v-8.3333h8.3333v-8.3333h33.333v8.3333h8.3333v8.3333h-16.667v-8.3333h-16.667v8.3333h-8.3333v25h8.3333v8.3333h16.667v-8.3333h16.667v8.3333h-8.3333v8.3333h-33.333v-8.3333h-8.3333v-8.3333h-8.3333z"/>
+ </g>
+ <g fill="#55d400" aria-label="C">
+  <path d="m13.75 28.75h7.5v-7.5h7.5v-7.5h30v7.5h7.5v7.5h-15v-7.5h-15v7.5h-7.5v22.5h7.5v7.5h15v-7.5h15v7.5h-7.5v7.5h-30v-7.5h-7.5v-7.5h-7.5z"/>
+ </g>
+</svg>

@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/combo">
+    <file>icon.svg</file>
+    <file>PloverRetro.ttf</file>
+  </qresource>
+</RCC>

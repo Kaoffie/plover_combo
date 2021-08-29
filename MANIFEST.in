@@ -1,0 +1,2 @@
+exclude plover_combo/*_rc.py
+recursive-include plover_combo/resources *
