@@ -14,7 +14,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import (
     QMouseEvent, QFont, QKeyEvent, QPen, QBrush, 
-    QFontDatabase, QColor, QKeySequence
+    QFontDatabase, QColor, QKeySequence, QPainter,
+    QPaintEvent
 )
 from PyQt5.QtCore import (
     Qt, QPoint, QVariantAnimation, QRectF, QSettings
@@ -74,6 +75,12 @@ class ComboTool(Tool):
     def _save_state(self, settings: QSettings) -> None:
         for key, value in self.config.as_dict().items():
             settings.setValue(key, value)
+
+    def paint_event(self, event: QPaintEvent) -> None:
+        self.painter = QPainter(self)
+        self.painter.setCompositionMode(QPainter.CompositionMode_Clear)
+        self.painter.fillRect(self.rect(), Qt.transparent)
+        self.painter.end()
 
     def on_settings(self) -> None:
         config_dialog = ConfigUI(self.config.copy(), self)
@@ -192,6 +199,10 @@ class ComboTool(Tool):
         self.layout.addWidget(self.text_view, 2, 0, 2, 1)
         self.layout.addWidget(self.cooldown_view, 3, 0, 1, 1)
         self.setLayout(self.layout)
+
+        self.mouseMoveEvent = self.view_mouse_move
+        self.mousePressEvent = self.view_mouse_press
+        self.paintEvent = self.paint_event
 
         self.animate()
         self.show()
