@@ -274,6 +274,8 @@ class ComboTool(Tool):
             self.move(self.pos() - self.frameGeometry().topRight() + prev_geometry.topRight())
         elif self.config.alignment == ComboAlignment.LEFT:
             self.move(self.pos() - self.frameGeometry().topLeft() + prev_geometry.topLeft())
+        
+        self.update()
 
     def animate_counter(self) -> None:
         self.counter_animation: QVariantAnimation
