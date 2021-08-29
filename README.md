@@ -8,4 +8,14 @@ A plugin for [Plover](https://github.com/openstenoproject/plover) that adds a Co
 
 ## Installation
 
-This plugin isn't on the Plover Plugin Registry yet, so you'll have to install from source. I'll try to get it onto PyPI as soon as possible.
+This plugin isn't on the Plover Plugin Registry yet; install it with the following command:
+
+```
+plover -s plover_plugins install plover_combo
+```
+
+Alternatively, if you are on Windows, locate the directory where Plover.exe is located in and install using the following command:
+
+```
+.\plover_command.exe -s plover_plugins install plover_combo
+```
