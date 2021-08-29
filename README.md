@@ -4,7 +4,7 @@ A plugin for [Plover](https://github.com/openstenoproject/plover) that adds a Co
 
 ![combo](https://user-images.githubusercontent.com/30435273/131253406-878f1d0b-6f83-4d31-8f2b-b919f5f9424a.gif)
 
-`Ctrl + S` to open settings, `Ctrl + X` to close widget.
+`Ctrl + S` to open settings, `Ctrl + X` to close widget. Left click on the counter number and drag to move the widget around. (On some systems, you'll have to click on the opaque areas of the font.)
 
 ## Installation
 
