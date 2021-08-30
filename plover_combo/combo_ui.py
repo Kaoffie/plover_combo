@@ -1,6 +1,8 @@
 import random
 import sys
 
+from typing import Any, Callable
+
 from plover.engine import StenoEngine
 from plover.gui_qt.tool import Tool
 from plover.gui_qt.utils import ToolBar
@@ -23,7 +25,8 @@ from PyQt5.QtCore import (
 )
 
 from plover_combo.combo_colors import (
-    COLORS, round_to_checkpoint, set_label_color
+    round_to_checkpoint, set_label_color,
+    string_hex_to_color, convert_str_color_config
 )
 from plover_combo.combo_config import (
     CONFIG_ITEMS, CONFIG_TYPES, ComboAlignment, 
@@ -34,6 +37,7 @@ from plover_combo.resources_rc import *
 
 
 STYLESHEET = "border:0px; background:transparent;"
+DEFAULT_COLOR = QColor(0, 0, 0)
 
 
 class ComboTool(Tool):
@@ -50,6 +54,7 @@ class ComboTool(Tool):
 
         self.drag_position = QPoint()
         self.counter = 0
+        self.repaint_offset = False
         self.setting_highscore = False
 
         self.config = ComboConfig()
@@ -65,7 +70,6 @@ class ComboTool(Tool):
         self.finished.connect(self.save_state)
 
         self.timer = QTimer()
-
 
     def _restore_state(self, settings: QSettings) -> None:
         for field_name in CONFIG_ITEMS.keys():
@@ -83,17 +87,14 @@ class ComboTool(Tool):
     def paint_event(self, event: QPaintEvent) -> None:
         painter = QPainter(self)
 
-        if self.config.force_repaint:
+        if self.config.bg_opacity > 0:
             painter.setCompositionMode(QPainter.CompositionMode_Overlay)
-            painter.fillRect(self.rect(), QColor(0, 0, 0, alpha=255))
-            painter.setCompositionMode(QPainter.CompositionMode_Clear)
-            painter.fillRect(self.rect(), QColor(0, 0, 0, alpha=0))
-
-        painter.setCompositionMode(QPainter.CompositionMode_Overlay)
-        if self.config.dark_mode:
-            painter.fillRect(self.rect(), QColor(0, 0, 0, alpha=self.config.bg_opacity))
+            bg_color = string_hex_to_color(self.config.bg_color, DEFAULT_COLOR)
+            bg_color.setAlpha(self.config.bg_opacity)
+            painter.fillRect(self.rect(), bg_color)
         else:
-            painter.fillRect(self.rect(), QColor(255, 255, 255, alpha=self.config.bg_opacity))
+            painter.setCompositionMode(QPainter.CompositionMode_Clear)
+            painter.fillRect(self.rect(), Qt.transparent)
 
     def on_settings(self) -> None:
         config_dialog = ConfigUI(self.config.copy(), self)
@@ -120,13 +121,16 @@ class ComboTool(Tool):
         self.counter_font = QFont(self.config.font_name, self.config.counter_font_size)
         self.title_font = QFont(self.config.font_name, self.config.title_font_size)
         self.subtitle_font = QFont(self.config.font_name, self.config.subtitle_font_size)
-        self.main_color, self.sub_color = COLORS[0]
+
+        self.title_color = string_hex_to_color(self.config.title_font_color, DEFAULT_COLOR)
+        self.title_color.setAlpha(self.config.title_font_opacity)
+        self.combo_colors, self.milestones = convert_str_color_config(self.config.combo_colors)
+
+        self.main_color, self.sub_color = self.combo_colors[0]
+        self.sub_color.setAlpha(self.config.subtitle_font_opacity)
 
         if hasattr(self, "combo_header"):
-            if self.config.dark_mode:
-                set_label_color(self.combo_header, QColor(Qt.white))
-            else:
-                set_label_color(self.combo_header, QColor(Qt.black))
+            set_label_color(self.combo_header, self.title_color)
 
         if hasattr(self, "combo_header_shadow"):
             self.combo_header_shadow.setXOffset(self.config.shadow_x_offset)
@@ -149,10 +153,7 @@ class ComboTool(Tool):
         self.combo_header = QLabel(self)
         self.combo_header.setText("Combo")
         self.combo_header.setFont(self.title_font)
-        if self.config.dark_mode:
-            set_label_color(self.combo_header, QColor(Qt.white))
-        else:
-            set_label_color(self.combo_header, QColor(Qt.black))
+        set_label_color(self.combo_header, self.title_color)
 
         self.combo_header_shadow = QGraphicsDropShadowEffect()
         self.combo_header_shadow.setBlurRadius(0)
@@ -232,12 +233,12 @@ class ComboTool(Tool):
         self.counter += 1
         shaked = False
 
-        if self.counter in COLORS:
+        if self.counter in self.combo_colors:
             self.update_colors()
         
         self.animate()
 
-        if self.counter in COLORS and self.counter > 0:
+        if self.counter in self.combo_colors and self.counter > 0:
             shaked = True
             self.animate_shake()
 
@@ -261,10 +262,12 @@ class ComboTool(Tool):
     
     def update_colors(self) -> None:
         color_index = self.counter
-        if self.counter not in COLORS:
-            color_index = round_to_checkpoint(self.counter)
+        if self.counter not in self.combo_colors:
+            color_index = round_to_checkpoint(self.counter, self.milestones)
         
-        self.main_color, self.sub_color = COLORS.get(color_index)
+        self.main_color, self.sub_color = self.combo_colors[color_index]
+        self.sub_color.setAlpha(self.config.subtitle_font_opacity)
+
         self.combo_header_shadow.setColor(self.main_color)
         set_label_color(self.highscore_header, self.sub_color)
         self.counter_text.setDefaultTextColor(self.main_color)
@@ -318,7 +321,7 @@ class ComboTool(Tool):
         ))
         
         self.counter_animation.valueChanged.connect(
-            lambda x: self.text_view.fitInView(x, Qt.KeepAspectRatio)
+            self.repaint_func(lambda x: self.text_view.fitInView(x, Qt.KeepAspectRatio))
         )
 
         self.counter_animation.setDuration(self.config.counter_anim_duration)
@@ -341,7 +344,7 @@ class ComboTool(Tool):
             self.width/2, 0, 0, self.config.bar_width
         ))
         self.cooldown_animation.valueChanged.connect(
-            lambda x: self.cooldown_bar.setRect(x)
+            self.repaint_func(lambda x: self.cooldown_bar.setRect(x))
         )
         self.cooldown_animation.finished.connect(self.reset_counter)
 
@@ -373,9 +376,16 @@ class ComboTool(Tool):
         shake_animation.setDuration(self.config.shake_duration)
         shake_animation.start()
 
+    def repaint_func(self, in_func: Callable[[Any], None]) -> Callable[[Any], None]:
+        if not self.config.force_repaint:
+            return in_func
 
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-#     window = ComboTool()
+        def func(x: Any) -> None:
+            in_func(x)
+            self.repaint()
 
-#     app.exec()
+        return func
+
+    def repaint(self) -> None:
+        self.setFixedWidth(self.width + (not self.repaint_offset) * self.config.force_repaint_px)
+        self.repaint_offset = not self.repaint_offset

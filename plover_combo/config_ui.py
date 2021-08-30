@@ -2,7 +2,8 @@ from PyQt5.QtWidgets import (
     QDialog, QWidget, QLabel, QSpinBox, 
     QComboBox, QDialogButtonBox, QGridLayout,
     QGroupBox, QCheckBox, QVBoxLayout,
-    QLineEdit, QScrollArea, QSizePolicy
+    QLineEdit, QScrollArea, QSizePolicy,
+    QPlainTextEdit, QSizePolicy
 )
 from PyQt5.QtCore import Qt
 
@@ -10,9 +11,11 @@ from plover_combo.combo_config import (
     ComboAlignment, ComboConfig, CONFIG_NAMES, CONFIG_ORDER, 
     CONFIG_TYPES, CONFIG_RANGES, ALIGNMENT_OPTIONS
 )
+from plover_combo.combo_colors import COLOR_FORMAT
 
 
 FIELD_DATA_WIDTH = 250
+PLAIN_TEXT_DATA_HEIGHT = 200
 
 
 class ConfigUI(QDialog):
@@ -90,6 +93,24 @@ class ConfigUI(QDialog):
             current_groupbox.setLayout(current_grid_layout)
             self.scroll_layout.addWidget(current_groupbox)
 
+        combo_color_group = QGroupBox()
+        combo_color_group.setTitle("Combo Colors")
+        combo_color_layout = QVBoxLayout()
+
+        combo_color_label = QLabel()
+        combo_color_label.setText(COLOR_FORMAT)
+        combo_color_layout.addWidget(combo_color_label)
+
+        combo_color_data = QPlainTextEdit()
+        combo_color_data.setPlainText(self.temp_config.combo_colors)
+        combo_color_data.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        combo_color_data.setFixedHeight(PLAIN_TEXT_DATA_HEIGHT)
+        combo_color_layout.addWidget(combo_color_data)
+        self.fields["combo_colors"] = combo_color_data
+
+        combo_color_group.setLayout(combo_color_layout)
+        self.scroll_layout.addWidget(combo_color_group)
+
         self.button_box = QDialogButtonBox(
             (
                 QDialogButtonBox.Cancel | 
@@ -126,4 +147,5 @@ class ConfigUI(QDialog):
             if field_value is not None:
                 setattr(self.temp_config, config_name, field_value)
         
+        self.temp_config.combo_colors = self.fields["combo_colors"].toPlainText()
         self.accept()
