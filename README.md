@@ -26,4 +26,4 @@ Alternatively, if you are on Windows, locate the directory where Plover.exe is l
 
 ## Credits
 
-Huge thanks to /usr and Emily on the Plover Discord for testing the plugin out on macOS!
+Huge thanks to /usr, Emily and Jen on the Plover Discord for testing the plugin out on macOS!
