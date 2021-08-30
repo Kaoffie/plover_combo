@@ -83,9 +83,6 @@ class ComboTool(Tool):
     def paint_event(self, event: QPaintEvent) -> None:
         painter = QPainter(self)
 
-        painter.setCompositionMode(QPainter.CompositionMode_Clear)
-        painter.fillRect(self.rect(), Qt.transparent)
-
         painter.setCompositionMode(QPainter.CompositionMode_Overlay)
         if self.config.dark_mode:
             painter.fillRect(self.rect(), QColor(0, 0, 0, alpha=self.config.bg_opacity))
@@ -281,6 +278,12 @@ class ComboTool(Tool):
 
         self.width = int(self.text_width + self.config.horz_margin * 2)
         self.height = int(self.text_height + self.config.top_margin + self.config.bottom_margin)
+
+        if self.config.force_resize:
+            prev_height = self.frameGeometry().height()
+            self.setFixedHeight(1)
+            self.setFixedWidth(1)
+            self.setFixedHeight(prev_height)
 
         prev_geometry = self.frameGeometry()
         self.setFixedWidth(self.width)

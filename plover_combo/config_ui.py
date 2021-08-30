@@ -100,7 +100,6 @@ class ConfigUI(QDialog):
         self.button_box.rejected.connect(self.reject)
         self.button_box.accepted.connect(self.save_settings)
 
-        
         self.scroll_widget.setLayout(self.scroll_layout)
         self.scroll_area.setWidget(self.scroll_widget)
 

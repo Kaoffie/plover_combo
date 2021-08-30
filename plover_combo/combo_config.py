@@ -20,6 +20,7 @@ CONFIG_ITEMS = {
     "cooldown_duration": 2000,
     "reset_on_undo": True,
     "bg_opacity": 1,
+    "force_resize": False,
     "top_margin": 10,
     "bottom_margin": 10,
     "horz_margin": 30,
@@ -75,6 +76,7 @@ CONFIG_NAMES = {
     "reset_on_undo": "Reset Combo on Undo",
     "dark_mode": "Dark Mode",
     "bg_opacity": "Background Opacity (0-255)",
+    "force_resize": "Force Resize",
     "top_margin": "Counter Top Margin",
     "bottom_margin": "Counter Bottom Margin",
     "horz_margin": "Counter Horizontal Margin",
@@ -102,6 +104,7 @@ CONFIG_ORDER = [
 
     "Display Settings",
     "dark_mode",
+    "force_resize",
     "bg_opacity",
     "top_margin",
     "bottom_margin",
