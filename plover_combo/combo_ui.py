@@ -82,8 +82,11 @@ class ComboTool(Tool):
 
     def paint_event(self, event: QPaintEvent) -> None:
         painter = QPainter(self)
-        painter.setCompositionMode(QPainter.CompositionMode_Overlay)
 
+        painter.setCompositionMode(QPainter.CompositionMode_Clear)
+        painter.fillRect(self.rect(), Qt.transparent)
+
+        painter.setCompositionMode(QPainter.CompositionMode_Overlay)
         if self.config.dark_mode:
             painter.fillRect(self.rect(), QColor(0, 0, 0, alpha=self.config.bg_opacity))
         else:

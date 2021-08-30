@@ -8,7 +8,7 @@ A plugin for [Plover](https://github.com/openstenoproject/plover) that adds a Co
 
 - `Ctrl/Cmd + S` to open settings, `Ctrl/Cmd + X` to close widget. 
 - Left click on the counter number and drag to move the widget around. (On some systems, you'll have to click on the opaque areas of the font.)
-- On macOS, you might experience repainting issues where a ghost image appears behind the counter when the background opacity is set to 0. To fix this, try opening the settings with `Cmd + S` and change the background opacity to 1.
+- On macOS, you might experience repainting issues where a ghost image appears behind the counter. This issue has not been fixed yet.
 
 ## Installation
 
