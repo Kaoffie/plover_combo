@@ -18,7 +18,8 @@ from PyQt5.QtGui import (
     QPaintEvent
 )
 from PyQt5.QtCore import (
-    Qt, QPoint, QVariantAnimation, QRectF, QSettings
+    Qt, QPoint, QVariantAnimation, QRectF, QSettings,
+    QTimer
 )
 
 from plover_combo.combo_colors import (
@@ -63,6 +64,9 @@ class ComboTool(Tool):
 
         self.finished.connect(self.save_state)
 
+        self.timer = QTimer()
+
+
     def _restore_state(self, settings: QSettings) -> None:
         for field_name in CONFIG_ITEMS.keys():
             if settings.contains(field_name):
@@ -77,10 +81,13 @@ class ComboTool(Tool):
             settings.setValue(key, value)
 
     def paint_event(self, event: QPaintEvent) -> None:
-        self.painter = QPainter(self)
-        self.painter.setCompositionMode(QPainter.CompositionMode_Clear)
-        self.painter.fillRect(self.rect(), Qt.transparent)
-        self.painter.end()
+        painter = QPainter(self)
+        painter.setCompositionMode(QPainter.CompositionMode_Overlay)
+
+        if self.config.dark_mode:
+            painter.fillRect(self.rect(), QColor(0, 0, 0, alpha=self.config.bg_opacity))
+        else:
+            painter.fillRect(self.rect(), QColor(255, 255, 255, alpha=self.config.bg_opacity))
 
     def on_settings(self) -> None:
         config_dialog = ConfigUI(self.config.copy(), self)

@@ -19,6 +19,7 @@ CONFIG_ITEMS = {
     "highscore": 0,
     "cooldown_duration": 2000,
     "reset_on_undo": True,
+    "bg_opacity": 1,
     "top_margin": 10,
     "bottom_margin": 10,
     "horz_margin": 30,
@@ -72,6 +73,8 @@ class ComboConfig:
 CONFIG_NAMES = {
     "cooldown_duration": "Cooldown Duration",
     "reset_on_undo": "Reset Combo on Undo",
+    "dark_mode": "Dark Mode",
+    "bg_opacity": "Background Opacity (0-255)",
     "top_margin": "Counter Top Margin",
     "bottom_margin": "Counter Bottom Margin",
     "horz_margin": "Counter Horizontal Margin",
@@ -79,7 +82,6 @@ CONFIG_NAMES = {
     "zoom_scale_percent": "Counter Normal to Enlarged Ratio",
     "alignment": "Widget Alignment",
     "font_name": "Font Name",
-    "dark_mode": "Dark Mode (Title Color)",
     "title_font_size": "Title Font Size",
     "subtitle_font_size": "Highscore Font Size",
     "counter_font_size": "Counter Font Size",
@@ -99,6 +101,8 @@ CONFIG_ORDER = [
     "cooldown_duration",
 
     "Display Settings",
+    "dark_mode",
+    "bg_opacity",
     "top_margin",
     "bottom_margin",
     "horz_margin",
@@ -107,7 +111,6 @@ CONFIG_ORDER = [
     "alignment",
     
     "Font Settings",
-    "dark_mode",
     "font_name",
     "title_font_size",
     "subtitle_font_size",
@@ -126,6 +129,7 @@ CONFIG_ORDER = [
 
 CONFIG_RANGES = {
     "cooldown_duration": (100, 30000, 100, "ms"),
+    "bg_opacity": (0, 255, 1, None),
     "top_margin": (-300, 300, 1, "px"),
     "bottom_margin": (-300, 300, 1, "px"),
     "horz_margin": (-300, 300, 1, "px"),
