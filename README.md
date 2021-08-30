@@ -23,3 +23,7 @@ Alternatively, if you are on Windows, locate the directory where Plover.exe is l
 ```
 .\plover_command.exe -s plover_plugins install plover_combo
 ```
+
+## Credits
+
+Huge thanks to /usr and Emily on the Plover Discord for testing the plugin out on macOS!
