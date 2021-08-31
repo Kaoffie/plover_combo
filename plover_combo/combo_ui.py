@@ -6,6 +6,7 @@ from typing import Any, Callable
 from plover.engine import StenoEngine
 from plover.gui_qt.tool import Tool
 from plover.gui_qt.utils import ToolBar
+from plover.oslayer.config import PLUGINS_PLATFORM
 from plover.steno import Stroke
 
 from PyQt5.QtWidgets import (
@@ -21,7 +22,7 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtCore import (
     Qt, QPoint, QVariantAnimation, QRectF, QSettings,
-    QTimer
+    QTimer, QRect
 )
 
 from plover_combo.combo_colors import (
@@ -80,6 +81,12 @@ class ComboTool(Tool):
                     settings.value(field_name, type=CONFIG_TYPES[field_name])
                 )
 
+            elif (
+                field_name == "force_repaint"
+                and PLUGINS_PLATFORM is not None and PLUGINS_PLATFORM == "mac"
+            ):
+                self.config.force_repaint = True
+
     def _save_state(self, settings: QSettings) -> None:
         for key, value in self.config.as_dict().items():
             settings.setValue(key, value)
@@ -91,10 +98,16 @@ class ComboTool(Tool):
             painter.setCompositionMode(QPainter.CompositionMode_Overlay)
             bg_color = string_hex_to_color(self.config.bg_color, DEFAULT_COLOR)
             bg_color.setAlpha(self.config.bg_opacity)
-            painter.fillRect(self.rect(), bg_color)
+            painter.fillRect(self.repaint_rect(), bg_color)
         else:
             painter.setCompositionMode(QPainter.CompositionMode_Clear)
-            painter.fillRect(self.rect(), Qt.transparent)
+            painter.fillRect(self.repaint_rect(), Qt.transparent)
+
+        if self.config.border_width > 0:
+            painter.setCompositionMode(QPainter.CompositionMode_Overlay)
+            border_color = string_hex_to_color(self.config.border_color, DEFAULT_COLOR)
+            painter.setPen(QPen(border_color, self.config.border_width))
+            painter.drawRect(self.repaint_rect())
 
     def on_settings(self) -> None:
         config_dialog = ConfigUI(self.config.copy(), self)
@@ -117,10 +130,15 @@ class ComboTool(Tool):
         self.increment_counter()
 
     def reload_config(self) -> None:
+        if self.config.reset_highscore:
+            self.config.highscore = 0
+            self.config.reset_highscore = False
+            self.config.setting_highscore = False
+
         self.zoom_scale = self.config.get_zoom_scale()
-        self.counter_font = QFont(self.config.font_name, self.config.counter_font_size)
-        self.title_font = QFont(self.config.font_name, self.config.title_font_size)
-        self.subtitle_font = QFont(self.config.font_name, self.config.subtitle_font_size)
+        self.counter_font = QFont(self.config.counter_font_name, self.config.counter_font_size)
+        self.title_font = QFont(self.config.title_font_name, self.config.title_font_size)
+        self.subtitle_font = QFont(self.config.subtitle_font_name, self.config.subtitle_font_size)
 
         self.title_color = string_hex_to_color(self.config.title_font_color, DEFAULT_COLOR)
         self.title_color.setAlpha(self.config.title_font_opacity)
@@ -131,10 +149,14 @@ class ComboTool(Tool):
 
         if hasattr(self, "combo_header"):
             set_label_color(self.combo_header, self.title_color)
+            self.combo_header.setText(self.config.title_text)
 
         if hasattr(self, "combo_header_shadow"):
             self.combo_header_shadow.setXOffset(self.config.shadow_x_offset)
             self.combo_header_shadow.setYOffset(self.config.shadow_y_offset)
+
+        if hasattr(self, "highscore_header"):
+            self.update_highscore()
 
     def setup_actions(self) -> None:
         self.close_action = QAction(self)
@@ -151,7 +173,7 @@ class ComboTool(Tool):
 
     def setup_header(self) -> None:
         self.combo_header = QLabel(self)
-        self.combo_header.setText("Combo")
+        self.combo_header.setText(self.config.title_text)
         self.combo_header.setFont(self.title_font)
         set_label_color(self.combo_header, self.title_color)
 
@@ -163,7 +185,7 @@ class ComboTool(Tool):
         self.combo_header.setGraphicsEffect(self.combo_header_shadow)
         
         self.highscore_header = QLabel(self)
-        self.highscore_header.setText(f"HI {self.config.highscore}")
+        self.update_highscore()
         self.highscore_header.setFont(self.subtitle_font)
         set_label_color(self.highscore_header, self.sub_color)
 
@@ -207,7 +229,7 @@ class ComboTool(Tool):
         self.setStyleSheet("QWidget#combo {background:transparent;}")
 
         self.layout = QGridLayout()
-        self.layout.setContentsMargins(0, 10, 0, 10)
+        self.layout.setContentsMargins(0, self.config.top_padding, 0, self.config.bottom_padding)
         self.layout.addWidget(self.combo_header, 0, 0, 1, 1, Qt.AlignCenter)
         self.layout.addWidget(self.highscore_header, 1, 0, 1, 1, Qt.AlignCenter)
         self.layout.addWidget(self.text_view, 2, 0, 2, 1)
@@ -218,6 +240,7 @@ class ComboTool(Tool):
         self.mousePressEvent = self.view_mouse_press
         self.paintEvent = self.paint_event
 
+        self.adjustSize()
         self.animate()
         self.show()
 
@@ -238,7 +261,10 @@ class ComboTool(Tool):
         
         self.animate()
 
-        if self.counter in self.combo_colors and self.counter > 0:
+        if (
+            (self.counter in self.combo_colors and self.counter > 0)
+            or self.config.shake_on_all
+        ):
             shaked = True
             self.animate_shake()
 
@@ -259,6 +285,9 @@ class ComboTool(Tool):
         self.setting_highscore = False
         self.update_colors()
         self.animate()
+    
+    def update_highscore(self) -> None:
+        self.highscore_header.setText(f"HI {self.config.highscore}")
     
     def update_colors(self) -> None:
         color_index = self.counter
@@ -281,6 +310,12 @@ class ComboTool(Tool):
         self.animate_cooldown()
 
     def adjust_window(self) -> None:
+        if self.repaint_offset:
+            self.repaint()
+
+        self.layout.setContentsMargins(0, self.config.top_padding, 0, self.config.bottom_padding)
+        self.adjustSize()
+
         text_bound = self.counter_text.boundingRect()
         self.text_width = text_bound.width()
         self.text_height = text_bound.height()
@@ -376,6 +411,13 @@ class ComboTool(Tool):
         shake_animation.setDuration(self.config.shake_duration)
         shake_animation.start()
 
+    def repaint_rect(self) -> QRect:
+        window_rect = self.rect()
+        if self.repaint_offset:
+            window_rect.setWidth(window_rect.width() - 1)
+        
+        return window_rect
+
     def repaint_func(self, in_func: Callable[[Any], None]) -> Callable[[Any], None]:
         if not self.config.force_repaint:
             return in_func
@@ -387,5 +429,6 @@ class ComboTool(Tool):
         return func
 
     def repaint(self) -> None:
-        self.setFixedWidth(self.width + (not self.repaint_offset) * self.config.force_repaint_px)
         self.repaint_offset = not self.repaint_offset
+        self.setFixedWidth(self.width + self.repaint_offset * self.config.force_repaint_px)
+        
