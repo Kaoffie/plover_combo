@@ -1,6 +1,5 @@
 # Plover Combo
 [![PyPI](https://img.shields.io/pypi/v/plover-combo)](https://pypi.org/project/plover-combo/)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/plover-combo)
 ![GitHub](https://img.shields.io/github/license/Kaoffie/plover_combo)
 
 A plugin for the open-source stenography software [Plover](https://www.openstenoproject.org) that adds a Combo counter. Inspired by the [Code in the Dark Editor](https://github.com/codeinthedark/editor).
@@ -21,17 +20,7 @@ A plugin for the open-source stenography software [Plover](https://www.opensteno
 
 ## Installation
 
-This plugin isn't on the Plover Plugin Registry yet; install it with the following command:
-
-```
-plover -s plover_plugins install plover_combo
-```
-
-Alternatively, if you are on Windows, locate the directory where Plover.exe is located in and install using the following command:
-
-```
-.\plover_command.exe -s plover_plugins install plover_combo
-```
+You can install this plugin directly using the Plugin Manager, under the name `plover-combo`.
 
 ## Credits
 
