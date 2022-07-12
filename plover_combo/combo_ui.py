@@ -75,11 +75,19 @@ class ComboTool(Tool):
     def _restore_state(self, settings: QSettings) -> None:
         for field_name in CONFIG_ITEMS.keys():
             if settings.contains(field_name):
-                setattr(
-                    self.config, 
-                    field_name, 
-                    settings.value(field_name, type=CONFIG_TYPES[field_name])
-                )
+                try:
+                    field_type = CONFIG_TYPES[field_name]
+                    if field_type == ComboAlignment:
+                        field_value = settings.value(field_name, type=int)
+                        setattr(self.config, field_name, field_value.value)
+                    else:
+                        setattr(
+                            self.config, 
+                            field_name, 
+                            settings.value(field_name, type=field_type)
+                        )
+                except TypeError:
+                    continue
 
             elif (
                 field_name == "force_repaint"
@@ -89,6 +97,9 @@ class ComboTool(Tool):
 
     def _save_state(self, settings: QSettings) -> None:
         for key, value in self.config.as_dict().items():
+            if type(value) == ComboAlignment:
+                value = ComboAlignment(value)
+            
             settings.setValue(key, value)
 
     def paint_event(self, event: QPaintEvent) -> None:
